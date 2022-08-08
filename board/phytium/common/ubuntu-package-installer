@@ -1,0 +1,96 @@
+#!/bin/bash
+
+DISTROTYPE=$3
+DISTROSCALE=$5
+tarch=$1
+
+do_distrorfs_second_stage() {
+    [ -f /etc/buildinfo -a ! -f /proc/uptime ] && return
+    packages_list=/usr/aptpkg/$4
+    . $packages_list
+
+    echo "1." $1
+    echo "2." $2
+    echo "3." $3
+    echo "4." $4
+    echo "5." $5
+    if [ ! -d /home/user ]; then
+    	useradd -m -d /home/user -s /bin/bash user
+    	gpasswd -a user sudo
+    	echo -e 'root\nroot\n' | passwd root
+    	echo -e 'user\nuser\n' | passwd user
+    	usermod -aG sudo user
+	chown -R user:user /home/user
+    fi
+    if [ -d /etc/shadow ]; then
+	cd /etc
+	chmod u=rw,g=r,o=r shadow
+    fi
+    # set default hostname
+    echo localhost > /etc/hostname
+
+    # set apt sources list to install additional packages
+    asl=/etc/apt/sources.list
+    rm -f $asl
+    echo deb http://mirrors.163.com/ubuntu-ports/ focal main restricted universe multiverse >> $asl
+    chmod +777 /tmp
+    DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true LC_ALL=C LANGUAGE=C LANG=C \
+    apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" update || exit 1
+
+    DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true LC_ALL=C LANGUAGE=C LANG=C \
+    apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade || exit 1
+    echo upgraded
+
+    echo installing base packages: $pkglist
+    for pkg in $additional_base_packages_list; do
+	echo Installing $pkg ...
+	DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install $pkg || exit 1
+    done
+
+
+    echo installed additional packages.
+    
+    for pkg in net-tools vim ; do
+    	DEBIAN_FRONTEND=noninteractive apt -y install $pkg || true
+    done
+
+
+    # clean cached packages
+    apt-get clean
+
+
+    if [ $1 = arm64 ]; then
+	sysarch=aarch64-linux-gnu
+    elif [ $1 = armhf ]; then
+	sysarch=arm-linux-gnueabihf
+    fi
+
+
+    [ -f /usr/bin/sudo -a ! -u /usr/bin/sudo ] && chmod +s /usr/bin/sudo
+    [ -d /var/cache/man ] && chown -R man:root /var/cache/man
+
+    # some shared libraries locate in /lib/aarch64-linux-gnu(or /lib/arm-linux-gnueabihf) and /usr/local/lib
+    echo export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/$sysarch:/lib/$sysarch >> /etc/profile
+
+    tmpusr=`ls -t /home | cut -d' ' -f1 | head -1`
+    [ -d /home/$tmpusr -a "$tmpusr" != "user" ] && rm -rf /home/$tmpusr
+
+    test -c /dev/pts/0 && umount /dev/pts
+    test -f /proc/uptime && umount /proc
+
+    echo APT Packages List: > /etc/packages.list
+    echo -e "Package\t Version\t Download-Size\t APT-Sources" >> /etc/packages.list
+    apt list --installed | cut  -d/ -f1 | xargs apt show | \
+	grep -E '^Package:|^APT-Sources:|^Version:|^Download-Size:'  > packagelist
+    lnum=`wc -l packagelist |cut -d' ' -f1`
+    for((i=1; i<$lnum;)); do
+	t=$[ $i + 3 ]
+	sed -n "${i},${t}p"  packagelist | grep -E 'Package:|APT-Sources:|Version:|Download-Size:' | \
+	tr "\n" " "  | cut -d' ' -f2,4,6,7,9,10 >> /etc/packages.list
+	i=$[ $i + 4 ]
+    done
+    rm -f packagelist
+}
+
+do_distrorfs_second_stage $1 $2 $3 $4 $5
+# end second stage installing

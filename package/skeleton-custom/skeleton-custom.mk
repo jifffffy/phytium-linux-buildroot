@@ -15,8 +15,36 @@ SKELETON_CUSTOM_PROVIDES = skeleton
 
 SKELETON_CUSTOM_INSTALL_STAGING = YES
 
-SKELETON_CUSTOM_PATH = $(call qstrip,$(BR2_ROOTFS_SKELETON_CUSTOM_PATH))
 
+ifneq ($(call qstrip,$(BR2_ROOTFS_SKELETON_CUSTOM_SITE)),)
+SKELETON_CUSTOM_SITE = $(call qstrip,$(BR2_ROOTFS_SKELETON_CUSTOM_SITE))
+SKELETON_CUSTOM_SOURCE = $(call qstrip,$(BR2_ROOTFS_SKELETON_CUSTOM_SOURCE))
+SKELETON_CUSTOM_SITE_METHOD = $(call qstrip,$(BR2_ROOTFS_SKELETON_CUSTOM_SITE_METHOD))
+SKELETON_CUSTOM_EXTRACT = $(call qstrip,$(BR2_ROOTFS_SKELETON_CUSTOM_EXTRACT))
+
+define SKELETON_CUSTOM_EXTRACT_CMDS
+        if [ $(BR2_ROOTFS_SKELETON_CUSTOM_EXTRACT_IGNORE_ERROR) = y ]; then \
+                cd $(@D) && $(SKELETON_CUSTOM_EXTRACT) $(DL_DIR)/skeleton-custom/$(SKELETON_CUSTOM_SOURCE) || true; \
+        else \
+                cd $(@D) && $(SKELETON_CUSTOM_EXTRACT) $(DL_DIR)/skeleton-custom/$(SKELETON_CUSTOM_SOURCE); \
+        fi
+endef
+
+define SKELETON_CUSTOM_INSTALL_TARGET_CMDS
+        $(call SYSTEM_RSYNC,$(@D),$(TARGET_DIR))
+        $(INSTALL) -m 0644 support/misc/target-dir-warning.txt \
+                $(TARGET_DIR_WARNING_FILE)
+        cd $(TARGET_DIR)/var && rm run && ln -sf ../run run && rm lock && ln -sf ../run/lock lock
+endef
+
+define SKELETON_CUSTOM_INSTALL_STAGING_CMDS
+        $(call SYSTEM_RSYNC,$(@D),$(STAGING_DIR))
+        cd $(STAGING_DIR)/var && rm run && ln -sf ../run run && rm lock && ln -sf ../run/lock lock
+endef
+
+else
+
+SKELETON_CUSTOM_PATH = $(call qstrip,$(BR2_ROOTFS_SKELETON_CUSTOM_PATH))
 ifeq ($(BR2_PACKAGE_SKELETON_CUSTOM)$(BR_BUILDING),yy)
 ifeq ($(SKELETON_CUSTOM_PATH),)
 $(error No path specified for the custom skeleton)
@@ -57,5 +85,5 @@ define SKELETON_CUSTOM_INSTALL_STAGING_CMDS
 	$(call SYSTEM_USR_SYMLINKS_OR_DIRS,$(STAGING_DIR))
 	$(call SYSTEM_LIB_SYMLINK,$(STAGING_DIR))
 endef
-
+endif # BR2_ROOTFS_SKELETON_CUSTOM_SITE
 $(eval $(generic-package))
