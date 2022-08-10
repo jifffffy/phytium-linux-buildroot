@@ -7,7 +7,7 @@ phytium-linux-buildroot基于Buildroot，适配了飞腾e2000开发板，支持u
 Buildroot被设计为在Linux系统上运行，我们在ubuntu20.04系统上运行phytium-linux-buildroot。
 
 ## 下载phytium-linux-buildroot
-`$ git clone git@gitee.com:phytium_embedded/phytium-linux-buildroot.git`
+`$ git clone https://gitee.com/phytium_embedded/phytium-linux-buildroot.git`
 
 # 查看支持的defconfig
 为飞腾CPU平台构建的文件系统的配置文件位于configs目录。  
