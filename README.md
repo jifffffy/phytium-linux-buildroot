@@ -26,7 +26,7 @@ phytium_initrd_defconfig            - Build for phytium_initrd
 # 编译文件系统
 ## 为e2000编译文件系统
 （1）配置defconfig  
-ubuntu文件系统：  
+文件系统：  
 `$ make phytium_e2000_ubuntu_defconfig or make phytium_e2000_defconfig`  
 （2）编译  
 `$ make`  
@@ -62,4 +62,16 @@ SATA盘：
 =>ext4load scsi 0:1 0x90100000 boot/e2000q-miniITX.dtb
 =>ext4load scsi 0:1 0x90200000 boot/Image
 =>booti booti 0x90100000 - 0x90000000
+```
+
+# FAQ
+ 1. Ubuntu文件系统桌面无法登陆问题?
+```
+    文件系统启动后控制台下apt install kubuntu-desktop
+    
+    检查/home/user权限是否为user
+    
+    chown -R user:user /home/user
+
+    重新启动开发板子
 ```

@@ -7,7 +7,7 @@ tarch=$1
 do_distrorfs_second_stage() {
     [ -f /etc/buildinfo -a ! -f /proc/uptime ] && return
     packages_list=/usr/aptpkg/$4
-    . $packages_list
+    #. $packages_list
 
     echo "1." $1
     echo "2." $2

@@ -30,11 +30,6 @@ do_distrorfs_first_stage() {
 # $3: board/common/ubuntu-additional_packages_list
 # $4: focal
 # $5: ubuntu
-    echo "ll1." $1
-    echo "ll2." $2
-    echo "ll3." $3
-    echo "ll4." $4
-    echo "ll5." $5
 
     DISTROTYPE=$5
     [ -z "$RFSDIR" ] && RFSDIR=$2
@@ -64,7 +59,8 @@ do_distrorfs_first_stage() {
     #[ $1 != amd64 -a ! -f $RFSDIR/usr/bin/qemu-${tgtarch}-static ] && cp $(which qemu-${tgtarch}-static) $RFSDIR/usr/bin
     mkdir -p $2/usr/local/bin
     cp -f board/phytium/common/ubuntu-package-installer $RFSDIR/usr/local/bin/
-
+    cp -r   modules $RFSDIR/lib
+    rm -rf  modules
     packages_list=board/phytium/common/$3
     [ ! -f $packages_list ] && echo $packages_list not found! && exit 1
 
@@ -72,9 +68,6 @@ do_distrorfs_first_stage() {
     if [ ! -d $RFSDIR/usr/aptpkg ]; then
 	mkdir -p $RFSDIR/usr/aptpkg
 	cp -f $packages_list $RFSDIR/usr/aptpkg
-	if [ -f board/nxp/common/ls/reconfigpkg.sh ]; then
-		cp -f board/nxp/common/ls/reconfigpkg.sh $RFSDIR/usr/aptpkg
-	fi
     fi
 
     mkdir -p $RFSDIR/etc
@@ -106,9 +99,9 @@ do_distrorfs_first_stage() {
 
     sudo chroot $RFSDIR systemctl enable systemd-rootfs-resize
     sudo chown -R $USER:$GROUPS $RFSDIR
-    #if dpkg-query -l snapd | grep ii 1>/dev/null; then
-    #	chmod +rw -R $RFSDIR/var/lib/snapd/
-    #fi
+    if dpkg-query -l snapd | grep ii 1>/dev/null; then
+    	chmod +rw -R $RFSDIR/var/lib/snapd/
+    fi
 
     if [ $distro = focal ]; then
 	echo Ubuntu,20.04.1 | tee $RFSDIR/etc/.firststagedone 1>/dev/null
@@ -198,11 +191,9 @@ full_rtf()
 main()
 {
 	# $1 - the current rootfs directory, skeleton-custom or target
-	echo "1." ${1}
-	echo "2." ${2}
-	echo "3." $(arch_type)
-	echo "4." $(plat_name)
-        sudo rm -rf ${1}/*
+	sudo mv ${1}/lib/modules  ./
+	sudo rm -rf ${1}/*
+
 	# run first stage do_distrorfs_first_stage arm64 ${1} ubuntu-additional_packages_list focal ubuntu
 	do_distrorfs_first_stage $(arch_type) ${1} ubuntu-additional_packages_list focal ubuntu
 
