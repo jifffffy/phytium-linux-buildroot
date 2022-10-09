@@ -5,7 +5,7 @@ After=getty.target
 
 [Service]
 Type=oneshot
-ExecStart=/etc/init.d/S60rootfs-resize start
+ExecStart=/etc/init.d/S60rootfs-chown start
 
 [Install]
 WantedBy=multi-user.target

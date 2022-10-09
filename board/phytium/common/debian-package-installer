@@ -15,7 +15,6 @@ do_distrorfs_second_stage() {
     echo "4." $4
     echo "5." $5
     echo "6." $6
-    echo "7." $7
     if [ ! -d /home/user ]; then
     	useradd -m -d /home/user -s /bin/bash user
     	gpasswd -a user sudo
@@ -34,8 +33,9 @@ do_distrorfs_second_stage() {
     # set apt sources list to install additional packages
     asl=/etc/apt/sources.list
     rm -f $asl
-    echo deb http://mirrors.163.com/ubuntu-ports/ focal main restricted universe multiverse >> $asl
+    echo deb http://mirrors.aliyun.com/debian/ bullseye main  >> $asl
     chmod +777 /tmp
+    apt update
     DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true LC_ALL=C LANGUAGE=C LANG=C \
     apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" update || exit 1
 
@@ -49,12 +49,10 @@ do_distrorfs_second_stage() {
 	DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install $pkg || exit 1
     done
 
-    test -f /proc/uptime || mount -t proc proc /proc
-    test -f /dev/pts/ptmx || mount -t devpts devpts /dev/pts
 
     echo installed additional packages.
     if [ $6 = desktop ]; then
-	for pkg in kubuntu-desktop ; do
+	for pkg in task-kde-desktop ; do
                 DEBIAN_FRONTEND=noninteractive apt -y install $pkg || true
 	done
     	if [ $5 = D2000 ]; then 
@@ -62,17 +60,18 @@ do_distrorfs_second_stage() {
 		sed -i '1 a /usr/local/lib' /etc/ld.so.conf.d/aarch64-linux-gnu.conf
 		ldconfig
         	ln -sf /usr/local/bin/Xorg  /usr/bin/X
-		sed -i '28 a Environment="LD_LIBRARY_PATH=/usr/local/lib"' /lib/systemd/system/sddm.service
 	fi
 	usermod -a -G video,render,audio user
         gpasswd -a sddm render
         gpasswd -a sddm video
         gpasswd -a sddm audio
     fi
+
     if [ $5 = E2000 ]; then
-    	echo 'defaults.pcm.!card phytiume2000i2s'  >> /etc/asound.conf
-    	echo 'defaults.ctl.!card phytiume2000i2s'  >> /etc/asound.conf 
+                echo 'defaults.pcm.!card phytiume2000i2s'  >> /etc/asound.conf
+                echo 'defaults.ctl.!card phytiume2000i2s'  >> /etc/asound.conf
     fi
+
     # clean cached packages
     apt-get clean
 
@@ -94,7 +93,7 @@ do_distrorfs_second_stage() {
     tmpusr=`ls -t /home | cut -d' ' -f1 | head -1`
     [ -d /home/$tmpusr -a "$tmpusr" != "user" ] && rm -rf /home/$tmpusr
 
-    test -c /dev/pts/ptmx && umount /dev/pts
+    test -c /dev/pts/0 && umount /dev/pts
     test -f /proc/uptime && umount /proc
 
     echo APT Packages List: > /etc/packages.list
@@ -111,5 +110,5 @@ do_distrorfs_second_stage() {
     rm -f packagelist
 }
 
-do_distrorfs_second_stage $1 $2 $3 $4 $5 $6 $7
+do_distrorfs_second_stage $1 $2 $3 $4 $5 $6
 # end second stage installing

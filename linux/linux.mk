@@ -500,15 +500,21 @@ ifeq ($(BR2_STRIP_strip),y)
 LINUX_MAKE_FLAGS += INSTALL_MOD_STRIP=1
 endif
 
+ifneq ($(BR2_ROOTFS_LINUX_HEADERS),y)
+define LINUX_REMOVE_SOURCE
+	rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/build 
+	rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/source
+endef
+endif
+
 define LINUX_INSTALL_TARGET_CMDS
 	$(LINUX_INSTALL_KERNEL_IMAGE_TO_TARGET)
 	# Install modules and remove symbolic links pointing to build
 	# directories, not relevant on the target
 	@if grep -q "CONFIG_MODULES=y" $(@D)/.config; then \
 		$(LINUX_MAKE_ENV) $(MAKE1) $(LINUX_MAKE_FLAGS) -C $(@D) modules_install; \
-		rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/build ; \
-		rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/source ; \
 	fi
+	$(LINUX_REMOVE_SOURCE)
 	$(LINUX_INSTALL_HOST_TOOLS)
 endef
 

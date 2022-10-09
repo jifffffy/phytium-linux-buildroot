@@ -1,0 +1,63 @@
+From 985d28af96cad50aa7ae22f6f68a4c6d6fb70496 Mon Sep 17 00:00:00 2001
+From: Chunrong Guo <guochunrong@phytium.com.cn>
+Date: Fri, 26 Aug 2022 11:31:48 +0800
+Subject: [PATCH] chinese-display
+
+Signed-off-by: Chunrong Guo <guochunrong@phytium.com.cn>
+---
+ libbb/printable_string.c | 6 ++++--
+ libbb/unicode.c          | 6 ++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/libbb/printable_string.c b/libbb/printable_string.c
+index a814fd0..78b057a 100644
+--- a/libbb/printable_string.c
++++ b/libbb/printable_string.c
+@@ -28,8 +28,9 @@ const char* FAST_FUNC printable_string2(uni_stat_t *stats, const char *str)
+ 		}
+ 		if (c < ' ')
+ 			break;
+-		if (c >= 0x7f)
++		/*if (c >= 0x7f)
+ 			break;
++		*/	
+ 		s++;
+ 	}
+ 
+@@ -42,7 +43,8 @@ const char* FAST_FUNC printable_string2(uni_stat_t *stats, const char *str)
+ 			unsigned char c = *d;
+ 			if (c == '\0')
+ 				break;
+-			if (c < ' ' || c >= 0x7f)
++		/*	if (c < ' ' || c >= 0x7f)*/
++			if (c < ' ' )
+ 				*d = '?';
+ 			d++;
+ 		}
+diff --git a/libbb/unicode.c b/libbb/unicode.c
+index e98cbbf..5de3604 100644
+--- a/libbb/unicode.c
++++ b/libbb/unicode.c
+@@ -1027,7 +1027,8 @@ static char* FAST_FUNC unicode_conv_to_printable2(uni_stat_t *stats, const char
+ 					while ((int)--width >= 0);
+ 					break;
+ 				}
+-				*d++ = (c >= ' ' && c < 0x7f) ? c : '?';
++				/**d++ = (c >= ' ' && c < 0x7f) ? c : '?';*/
++				*d++ = (c >= ' ') ? c : '?';
+ 				src++;
+ 			}
+ 			*d = '\0';
+@@ -1035,7 +1036,8 @@ static char* FAST_FUNC unicode_conv_to_printable2(uni_stat_t *stats, const char
+ 			d = dst = xstrndup(src, width);
+ 			while (*d) {
+ 				unsigned char c = *d;
+-				if (c < ' ' || c >= 0x7f)
++				/*if (c < ' ' || c >= 0x7f)*/
++				if (c < ' ')
+ 					*d = '?';
+ 				d++;
+ 			}
+-- 
+2.25.1
+

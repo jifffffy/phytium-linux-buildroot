@@ -2,11 +2,12 @@
 #
 # rootfs-resize        Starts rootfs-resize.
 #
-rootfs_resize() {
-	printf "\t Resize the rootfs: "
+rootfs_chown() {
+	printf "\t chown folder in the rootfs: "
 
-	RDEV=$(findmnt -n -o SOURCE /)
-	/sbin/resize2fs ${RDEV}
+	[ -d /var/cache/man ] && chown -R man:root /var/cache/man
+	[ -d /var/lib/sddm ] && chown -R sddm:sddm /var/lib/sddm
+	chown -R user:user /home/user
 	if [ $? -eq 0 ]
 	then
 		echo  "OK"
@@ -18,12 +19,12 @@ rootfs_resize() {
 }
 
 start() {
-	printf "Starting rootfs-resize: \n"
-	rootfs_resize
+	printf "Starting rootfs-chown: \n"
+	rootfs_chown
 }
 
 stop() {
-	printf "Stopping rootfs-resize: "
+	printf "Stopping rootfs-chown: "
 	echo "OK"
 }
 restart() {

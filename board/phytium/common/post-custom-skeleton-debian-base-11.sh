@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-distro=focal
+distro=bullseye
 
 trap recover_from_ctrl_c INT
 
@@ -56,32 +56,34 @@ do_distrorfs_first_stage() {
         exit 1
     fi
 
+    sudo chown 0:0  $RFSDIR
     #[ $1 != amd64 -a ! -f $RFSDIR/usr/bin/qemu-${tgtarch}-static ] && cp $(which qemu-${tgtarch}-static) $RFSDIR/usr/bin
-    mkdir -p $2/usr/local/bin
-    cp -f board/phytium/common/ubuntu-package-installer $RFSDIR/usr/local/bin/
-    cp -r   output/modules $RFSDIR/lib
-    rm -rf  output/modules
-    [ -f output/linux-headers.tar.gz ] && tar zxf  output/linux-headers.tar.gz -C $RFSDIR
+    sudo mkdir -p $2/usr/local/bin
+    sudo cp -f board/phytium/common/debian-package-installer $RFSDIR/usr/local/bin/
+    sudo cp -r   output/modules $RFSDIR/lib
+    sudo rm -rf  output/modules
+    [ -f output/linux-headers.tar.gz ] && sudo tar zxf  output/linux-headers.tar.gz -C $RFSDIR
     packages_list=board/phytium/common/$3
     [ ! -f $packages_list ] && echo $packages_list not found! && exit 1
 
     echo additional packages list: $packages_list
     if [ ! -d $RFSDIR/usr/aptpkg ]; then
-	mkdir -p $RFSDIR/usr/aptpkg
-	cp -f $packages_list $RFSDIR/usr/aptpkg
+	sudo mkdir -p $RFSDIR/usr/aptpkg
+	sudo cp -f $packages_list $RFSDIR/usr/aptpkg
     fi
 
-    mkdir -p $RFSDIR/etc
-    cp -f /etc/resolv.conf $RFSDIR/etc/resolv.conf
+    sudo mkdir -p $RFSDIR/etc
+    sudo cp -f /etc/resolv.conf $RFSDIR/etc/resolv.conf
 
     if [ ! -d $RFSDIR/debootstrap ]; then
         echo "testdeboot"
-	export LANG=en_US.UTF-8
-	sudo debootstrap --arch=$1 --foreign focal $RFSDIR
+	export LANG=zh_CN.UTF-8
+	sudo debootstrap --arch=$1 --foreign bullseye $RFSDIR  http://ftp.cn.debian.org/debian/
 
 	echo "installing for second-stage ..."
-	DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true LC_ALL=C LANGUAGE=C LANG=C \
-	sudo chroot $RFSDIR /debootstrap/debootstrap  --second-stage
+	export LC_ALL="zh_CN.UTF-8" && export LANGUAGE="zh_CN:zh" && export LANG="zh_CN.UTF-8"
+	#DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true LC_ALL=zh_CN.UTF-8 LANGUAGE=zh_CN:zh LANG=zh_CN.UTF-8 \
+	sudo chroot $RFSDIR /debootstrap/debootstrap  --variant=minbase --second-stage
 	if [ "x$?" != "x0" ]; then
 		do_recover_from_error "debootstrap failed in second-stage"
 		exit 1
@@ -92,27 +94,24 @@ do_distrorfs_first_stage() {
 	sudo chroot $RFSDIR dpkg --configure -a
     fi
 
-    sudo chroot $RFSDIR ubuntu-package-installer $1 $distro $5 $3 $6 $7 
+    sudo chroot $RFSDIR debian-package-installer $1 $distro $5 $3 $6 $7
 	if [ "x$?" != "x0" ]; then
-		 do_recover_from_error "ubuntu-package-installer failed"
+		 do_recover_from_error "debian-package-installer failed"
 		exit 1
 	fi
 
    # sudo chroot $RFSDIR systemctl enable systemd-rootfs-resize
     sudo chown -R $USER:$GROUPS $RFSDIR
-    if dpkg-query -l snapd | grep ii 1>/dev/null; then
-    	chmod +rw -R $RFSDIR/var/lib/snapd/
-    fi
 
-    if [ $distro = focal ]; then
-	echo Ubuntu,20.04.1 | tee $RFSDIR/etc/.firststagedone 1>/dev/null
+    if [ $distro = bullseye ]; then
+	echo debian,11 | tee $RFSDIR/etc/.firststagedone 1>/dev/null
     elif [ $distro = bionic ]; then
 	echo Ubuntu,18.04.5 | tee $RFSDIR/etc/.firststagedone 1>/dev/null
     fi
     setup_distribution_info $5 $2 $1
 
     #rm $RFSDIR/etc/apt/apt.conf
-    rm $RFSDIR/dev/* -rf
+    sudo rm $RFSDIR/dev/* -rf
 }
 
 setup_distribution_info () {
@@ -219,16 +218,16 @@ main()
 	sudo rm -rf ${1}/*
         cd ../../
 	# run first stage do_distrorfs_first_stage arm64 ${1} ubuntu-additional_packages_list focal ubuntu
-	do_distrorfs_first_stage $(arch_type) ${1} ubuntu-additional_packages_list focal ubuntu $(plat_name) $(full_rtf)
+	do_distrorfs_first_stage $(arch_type) ${1} ubuntu-additional_packages_list bullseye  debian $(plat_name) $(full_rtf)
 
 	# change the hostname to "platforms-Ubuntu"
-	echo $(plat_name)-Ubuntu > ${1}/etc/hostname
+	echo $(plat_name)-debian > ${1}/etc/hostname
+        
+	if ! grep -q  "$(plat_name)-debian"  ${1}/etc/hosts; then
+        	echo 127.0.0.1   $(plat_name)-debian | sudo tee -a ${1}/etc/hosts 1>/dev/null
+        fi
 
-	if [ $distro = focal ]; then
-		sed -i "s/float(n\[0\])/float(n[0].split()[0])/" ${1}/usr/share/pyshared/lsb_release.py
-	fi
-
-        if grep -Eq "^BR2_PACKAGE_XORG_ROGUE_UMLIBS=y$" ${BR2_CONFIG}; then
+	if grep -Eq "^BR2_PACKAGE_XORG_ROGUE_UMLIBS=y$" ${BR2_CONFIG}; then
                 make xorg-rogue-umlibs-rebuild ${O:+O=$O}
         fi
 

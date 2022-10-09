@@ -1,0 +1,2 @@
+config BR2_PACKAGE_ROOTFS_CHOWN
+        bool "rootfs_chown"
