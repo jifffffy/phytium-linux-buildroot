@@ -4,4 +4,4 @@ config BR2_PACKAGE_XORG_ROGUE_UMLIBS
 	  This is a comment that explains what xorg-rogue-umlibs is. The help text
 	  should be wrapped.
 
-	  https://gitlab.phytium.com.cn/embedded/linux/phytium-rogue-umlibs.git
+	  https://gitee.com/phytium_embedded/phytium-rogue-umlibs.git
