@@ -4,7 +4,9 @@ phytium-linux-buildroot基于Buildroot，适配了飞腾e2000开发板，支持u
 
 # 开发环境
 ## 系统要求
-Buildroot被设计为在Linux系统上运行，我们在ubuntu20.04系统上运行phytium-linux-buildroot。
+Buildroot被设计为在Linux系统上运行，我们在ubuntu20.04系统上运行phytium-linux-buildroot。  
+需要安装如下软件包：  
+`$ sudo apt-get install debootstrap qemu-system-common qemu-user-static binfmt-support`
 
 ## 下载phytium-linux-buildroot
 `$ git clone https://gitee.com/phytium_embedded/phytium-linux-buildroot.git`
