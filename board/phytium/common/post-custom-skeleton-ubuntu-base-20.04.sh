@@ -56,7 +56,6 @@ do_distrorfs_first_stage() {
         exit 1
     fi
 
-    #[ $1 != amd64 -a ! -f $RFSDIR/usr/bin/qemu-${tgtarch}-static ] && cp $(which qemu-${tgtarch}-static) $RFSDIR/usr/bin
     mkdir -p $2/usr/local/bin
     cp -f board/phytium/common/ubuntu-package-installer $RFSDIR/usr/local/bin/
     cp -r   output/modules $RFSDIR/lib
@@ -79,6 +78,7 @@ do_distrorfs_first_stage() {
 	export LANG=en_US.UTF-8
 	sudo debootstrap --arch=$1 --foreign focal $RFSDIR
 
+	[ $1 != amd64 -a ! -f $RFSDIR/usr/bin/qemu-${tgtarch}-static ] && sudo cp $(which qemu-${tgtarch}-static) $RFSDIR/usr/bin
 	echo "installing for second-stage ..."
 	DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true LC_ALL=C LANGUAGE=C LANG=C \
 	sudo chroot $RFSDIR /debootstrap/debootstrap  --second-stage
