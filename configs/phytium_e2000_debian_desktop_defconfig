@@ -37,6 +37,9 @@ BR2_LINUX_KERNEL_CUSTOM_GIT=y
 BR2_LINUX_KERNEL_CUSTOM_REPO_URL="https://gitee.com/phytium_embedded/phytium-linux-kernel.git"
 # kernel 4.19
 BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="2bc82f364da6e5d815219b3d670071245770fbaf"
+# kernel 5.10
+#BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="f0cc7d6de6976f4b2b88d425a91878d948106f80"
+
 BR2_LINUX_KERNEL_INTREE_DTS_NAME="phytium/e2000d-demo-board phytium/e2000d-miniitx-board phytium/e2000d-power-board phytium/e2000q-come-board  phytium/e2000q-demo-board phytium/e2000q-edu-board  phytium/e2000q-hanwei-board phytium/e2000q-miniitx-board phytium/e2000q-vpx-board phytium/e2000s-demo-board"
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
 BR2_LINUX_KERNEL_DEFCONFIG="e2000"
