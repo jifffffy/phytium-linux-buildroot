@@ -78,7 +78,7 @@ do_distrorfs_first_stage() {
     if [ ! -d $RFSDIR/debootstrap ]; then
         echo "testdeboot"
 	export LANG=zh_CN.UTF-8
-	sudo debootstrap --arch=$1 --foreign bullseye $RFSDIR  http://ftp.cn.debian.org/debian/
+	sudo debootstrap --arch=$1 --foreign bullseye $RFSDIR  http://mirrors.163.com/debian/
 
 	echo "installing for second-stage ..."
 	export LC_ALL="zh_CN.UTF-8" && export LANGUAGE="zh_CN:zh" && export LANG="zh_CN.UTF-8"

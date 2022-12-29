@@ -50,6 +50,7 @@ config BR2_PACKAGE_FFMPEG_FFMPEG
 
 config BR2_PACKAGE_FFMPEG_FFPLAY
 	bool "Build ffplay"
+        default y
 	depends on !BR2_STATIC_LIBS # sdl2
 	select BR2_PACKAGE_FFMPEG_SWSCALE
 	select BR2_PACKAGE_SDL2

@@ -99,7 +99,13 @@ do_distrorfs_first_stage() {
 	fi
 
    # sudo chroot $RFSDIR systemctl enable systemd-rootfs-resize
+    file_s=$(sudo find $RFSDIR -perm -4000)
     sudo chown -R $USER:$GROUPS $RFSDIR
+    for f in $file_s; do
+        sudo chmod u+s $f
+    done
+    sudo chmod u+s $RFSDIR/sbin/unix_chkpwd
+
     if dpkg-query -l snapd | grep ii 1>/dev/null; then
     	chmod +rw -R $RFSDIR/var/lib/snapd/
     fi
@@ -235,6 +241,14 @@ main()
 	if grep -Eq "^BR2_ROOTFS_CHOWN=y$" ${BR2_CONFIG}; then
                 make rootfs-chown-rebuild ${O:+O=$O}
 		sudo chroot ${1} systemctl enable systemd-rootfs-chown.service
+        fi
+
+	if grep -Eq "^BR2_PACKAGE_VPU_LIB=y$" ${BR2_CONFIG}; then
+                make vpu-lib-rebuild ${O:+O=$O}
+        fi
+
+	if grep -Eq "^BR2_PACKAGE_FFMPEG=y$" ${BR2_CONFIG}; then
+                make ffmpeg-rebuild ${O:+O=$O}
         fi
 
 	exit $?

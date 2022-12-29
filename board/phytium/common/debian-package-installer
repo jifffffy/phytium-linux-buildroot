@@ -86,6 +86,7 @@ do_distrorfs_second_stage() {
     [ -f /usr/bin/sudo -a ! -u /usr/bin/sudo ] && chmod +s /usr/bin/sudo
     [ -d /var/cache/man ] && chown -R man:root /var/cache/man
     [ -d /var/lib/sddm ] && chown -R sddm:sddm /var/lib/sddm
+    [ -L /lib/lib ] && rm -rf /lib/lib
 
     # some shared libraries locate in /lib/aarch64-linux-gnu(or /lib/arm-linux-gnueabihf) and /usr/local/lib
     echo export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/$sysarch:/lib/$sysarch >> /etc/profile

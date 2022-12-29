@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-FFMPEG_VERSION = 4.4.1
+FFMPEG_VERSION = 4.2.4
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.xz
 FFMPEG_SITE = http://ffmpeg.org/releases
 FFMPEG_INSTALL_STAGING = YES
@@ -34,6 +34,7 @@ FFMPEG_CONF_OPTS = \
 	--disable-small \
 	--enable-dct \
 	--enable-fft \
+	--enable-ftomx \
 	--enable-mdct \
 	--enable-rdft \
 	--disable-crystalhd \
@@ -572,5 +573,10 @@ define FFMPEG_REMOVE_EXAMPLE_SRC_FILES
 	rm -rf $(TARGET_DIR)/usr/share/ffmpeg/examples
 endef
 FFMPEG_POST_INSTALL_TARGET_HOOKS += FFMPEG_REMOVE_EXAMPLE_SRC_FILES
+
+define FFMPEG_INSTALL_TARGET_CMDS
+        $(TARGET_MAKE_ENV) $(MAKE) -C $(@D) install DESTDIR=$(TARGET_DIR)
+	cp $(TARGET_DIR)/usr/lib/libavcodec.so.58.54.100 $(TARGET_DIR)/usr/lib/aarch64-linux-gnu
+endef
 
 $(eval $(autotools-package))

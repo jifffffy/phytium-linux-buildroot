@@ -1,0 +1,12 @@
+config BR2_PACKAGE_VPU_LIB
+	bool "vpu-lib"
+	help
+	  This is a comment that explains what vpu-lib is. The help text
+	  should be wrapped.
+
+          https://gitee.com/phytium_embedded/vpu-lib.git
+
+config BR2_PACKAGE_VPU_LIB_CPU_MODEL
+        string "cpu model"
+        help
+          This is a comment that defines cpu model is, d2000 or e2000

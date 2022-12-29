@@ -232,14 +232,4 @@ chown -R user:user /home/user
 ```
 将user用户加入audio组，可解决user用户下没声音的问题
 gpasswd -a user audio
-
-如果经过上述配置后还是没声音，或者在root用户下没声音，需要配置寄存器
-（1）uboot命令行增加：
-mw 0x32b30240 0x46; mw 0x32b30244 0x46;
-（2）使用devmem2配置寄存器
-devmem2 0x32b30210 w 0x71
-devmem2 0x32b30214 w 0x71
-devmem2 0x32b30218 w 0x71
-devmem2 0x32b3021c w 0x71
-devmem2 0x32b30220 w 0x71   
 ```
