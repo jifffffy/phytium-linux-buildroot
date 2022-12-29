@@ -203,10 +203,10 @@ main()
 	cd ${1}/lib/modules/${KERNELVERSION}/build
 	if grep -Eq "^BR2_ROOTFS_LINUX_HEADERS=y$" ${BR2_CONFIG}; then
 		sudo mkdir -p ${ROOTPATH}
-		sudo cp --parents $(find  -type f -name "Makefile*" -o -name "Kconfig*")  ${ROOTPATH}
+		sudo cp --parents $(find  -type f -name "Makefile*" -o -name "Kconfig*")  ${ROOTPATH} 2>/dev/null || :
         	sudo cp -a  arch/arm64/include  ${ROOTPATH}
 		sudo cp -a .config      ${ROOTPATH}
-		sudo cp  --parents arch/arm64/kernel/module.lds  ${ROOTPATH}
+		sudo cp  --parents arch/arm64/kernel/module.lds  ${ROOTPATH} 2>/dev/null || :
 		sudo cp  --parents tools/include/tools/le_byteshift.h ${ROOTPATH}
 		sudo cp  --parents tools/include/tools/be_byteshift.h ${ROOTPATH}
         	sudo cp Module.symvers  ${ROOTPATH}
