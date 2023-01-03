@@ -236,6 +236,14 @@ main()
 		sudo chroot ${1} systemctl enable systemd-rootfs-chown.service
         fi
 
+	if grep -Eq "^BR2_PACKAGE_VPU_LIB=y$" ${BR2_CONFIG}; then
+                make vpu-lib-rebuild ${O:+O=$O}
+        fi
+
+        if grep -Eq "^BR2_PACKAGE_FFMPEG=y$" ${BR2_CONFIG}; then
+                make ffmpeg-rebuild ${O:+O=$O}
+        fi
+
 	exit $?
 }
 
